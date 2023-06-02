@@ -1,4 +1,4 @@
-const apiKey = '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';
+const apiKey = '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';
 
 class Prompts {
   //textPrompt
@@ -6,7 +6,7 @@ class Prompts {
     fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Content-type': 'application/json',
+        'content-type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
@@ -18,17 +18,16 @@ class Prompts {
       }),
     })
       .then((res) => res.json())
-      .then((data) => {
-        displayTextResponse(data.choices[0].message.content, content);
-      });
+      .then((data) => displayTextPrompt(data.choices[0].message.content))
+      .catch((err) => displayErrors(err));
   }
 
-  //imagePrompt
+  //image prompts
   imagePrompt(prompt) {
     fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
-        'Content-type': 'application/json',
+        'content-type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
@@ -37,67 +36,85 @@ class Prompts {
       }),
     })
       .then((res) => res.json())
-      .then((data) => {
-        displayImageResponse(data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }
-
-  //text mode
-  textMode() {
-    selector('#image-display').classList.add('d-none', 'false');
-    selector('#chat-display').classList.remove('d-none');
-    selector('#text-mode').classList.replace('btn-primary', 'btn-info');
-  }
-
-  //image mode
-  imageMode() {
-    selector('#image-display').classList.remove('d-none', 'false');
-    selector('#chat-display').classList.add('d-none');
+      .then((data) => displayImageResponse(data))
+      .catch((err) => displayErrors(err));
   }
 }
 
 //text response
-function displayTextResponse(data, content) {
-  let i = 0;
-
+function displayTextPrompt(data) {
   //remove spinner
   selector('.spinner-container').classList.add('d-none');
 
-  //create question display
-  const questionDisplay = `<div class="d-flex mb-3"><i class="fas fa-user p-3 rounded-circle bg-primary text-light mr-3 align-self-start"></i>  <div class="container p-2 bg-light rounded"> ${content}</div></div>`;
+  if (data.error) {
+    displayErrors(data.error.message);
+  } else {
+    //create Ai response container
+    const aiResponseContainer = document.createElement('div');
 
-  //create Ai response container
-  const aiResponseContainer = document.createElement('div');
+    //set ai response className
+    aiResponseContainer.className = 'd-flex mb-3';
 
-  //set ai response className
-  aiResponseContainer.className = 'd-flex mb-3';
+    //create Ai icon
+    const icon = document.createElement('i');
 
-  //create Ai icon
-  const icon = document.createElement('i');
+    //set ai icon className
+    icon.className =
+      'fas fa-brain p-3 rounded-circle bg-primary text-light mr-3 align-self-center';
 
-  //set Ai icon className
-  icon.className =
-    'fas fa-brain p-3 rounded-circle bg-primary text-light mr-3 align-self-start';
+    //create ai response output
+    const aiResponseOutput = document.createElement('div');
 
-  //create Ai response output
-  const aiResponseOutput = document.createElement('div');
+    //set ai responseOutput
+    aiResponseOutput.className = 'container p-2 bg-primary text-light rounded';
 
-  //set Ai response className
-  aiResponseOutput.className = 'container p-2 bg-primary text-light rounded';
+    //insert into dom
+    selector('#chat-display').appendChild(aiResponseContainer);
 
-  //insert into dom
-  selector('#chat-display').innerHTML += questionDisplay;
-  selector('#chat-display').appendChild(aiResponseContainer);
-
-  const typeInterval = setInterval(() => {
-    //append icon and Ai response output to Ai container
     aiResponseContainer.appendChild(icon);
     aiResponseContainer.appendChild(aiResponseOutput);
 
-    aiResponseOutput.innerHTML += data.charAt(i);
+    displayText(data, aiResponseOutput);
+  }
+}
+
+//image response
+function displayImageResponse(data) {
+  //remove spinner
+  selector('.spinner-container').classList.add('d-none');
+
+  if (data.error) {
+    displayErrors(data.error.message);
+  } else {
+    selector('#imgone').setAttribute('src', data.data[0].url);
+    selector('#imgtwo').setAttribute('src', data.data[1].url);
+  }
+}
+
+//display error
+function displayErrors(data) {
+  const div = document.createElement('div');
+
+  div.className = 'alert alert-danger text-center';
+
+  div.appendChild(document.createTextNode(data));
+
+  selector('.main-container').insertBefore(
+    div,
+    selector('#promptresult-container')
+  );
+
+  setTimeout(() => {
+    div.remove();
+  }, 4000);
+}
+
+//typing effect function
+function displayText(data, output) {
+  let i = 0;
+  //typing effect
+  const typeInterval = setInterval(() => {
+    output.innerHTML += data.charAt(i);
 
     i++;
 
@@ -108,31 +125,105 @@ function displayTextResponse(data, content) {
   }, 50);
 }
 
-//image response
-function displayImageResponse(data) {
-  //remove spinner
-  selector('.spinner-container').classList.add('d-none');
+function loadAllEventListeners() {
+  selector('#send-prompt').addEventListener('click', sendPrompt);
 
-  if (data.error) {
-    const div = document.createElement('div');
+  //text button
+  selector('#text-mode').addEventListener('click', textMode);
 
-    div.className = 'alert alert-danger text-center';
+  //image button
+  selector('#image-mode').addEventListener('click', imageMode);
 
-    div.appendChild(document.createTextNode(data.error.message));
+  document.addEventListener('DOMContentLoaded', textMode);
+}
 
-    selector('.main-container').insertBefore(
-      div,
-      selector('#promptresult-container')
-    );
-
-    //remove after 4secs
-    setTimeout(() => {
-      div.remove();
-    }, 4000);
-  } else {
-    selector('#imgone').setAttribute('src', data.data[0].url);
-    selector('#imgtwo').setAttribute('src', data.data[1].url);
+//send prompts
+function sendPrompt() {
+  //send prompts base on mode
+  if (
+    selector('#image-display').classList.contains('false') &&
+    selector('#prompt').value !== ''
+  ) {
+    userTextPrompt();
+  } else if (
+    !selector('#image-display').classList.contains('false') &&
+    selector('#prompt').value !== ''
+  ) {
+    userImagePrompt();
   }
+
+  //user text prompt
+  function userTextPrompt() {
+    //display user prompts
+    displayUserPrompt(selector('#prompt').value);
+
+    //init prompt class
+    const prompt = new Prompts();
+
+    //send prompt
+    prompt.textPrompt(selector('#prompt').value);
+
+    //clear input field
+    selector('#prompt').value = '';
+
+    //display spinner
+    selector('.spinner-container').classList.remove('d-none');
+  }
+}
+
+//user image prompt
+function userImagePrompt() {
+  //init prompt class
+  const prompt = new Prompts();
+
+  //send prompt
+  prompt.imagePrompt(selector('#prompt').value);
+
+  //clear input field
+  selector('#prompt').value = '';
+
+  //display spinner
+  selector('.spinner-container').classList.remove('d-none');
+}
+
+//display user prompt
+function displayUserPrompt(value) {
+  //creat prompt display
+  const userPromptDisplay = `
+  <div class="d-flex mb-3">
+  <i class="fas fa-user p-3 rounded-circle bg-primary text-light mr-3 align-self-start">
+  </i>
+  <div class="container p-2 bg-light rounded">
+   ${value}
+  </div>
+  </div>`;
+
+  //insert into dom
+  selector('#chat-display').innerHTML += userPromptDisplay;
+}
+
+//text mode
+function textMode() {
+  selector('#image-display').classList.add('d-none', 'false');
+  selector('#chat-display').classList.remove('d-none');
+
+  //set active state
+  activeState(selector('#text-mode'), selector('#image-mode'));
+}
+
+//image mode
+function imageMode() {
+  selector('#image-display').classList.remove('d-none', 'false');
+  selector('#chat-display').classList.add('d-none');
+
+  //set active state
+  activeState(selector('#image-mode'), selector('#text-mode'));
+}
+
+//activeState
+function activeState(stateOne, stateTwo) {
+  stateOne.classList.replace('btn-primary', 'btn-info');
+  stateTwo.classList.replace('btn-info', 'btn-primary');
 }
 
 //selector
@@ -140,64 +231,4 @@ function selector(selector) {
   return document.querySelector(selector);
 }
 
-//load eventlisteners
-function loadEventListeners() {
-  selector('#send-prompt').addEventListener('click', () => {
-    if (
-      selector('#image-display').classList.contains('false') &&
-      selector('#prompt').value !== ''
-    ) {
-      const prompt = new Prompts();
-
-      prompt.textPrompt(selector('#prompt').value);
-
-      selector('#prompt').value = '';
-
-      //add spinner
-      selector('.spinner-container').classList.remove('d-none');
-    } else if (
-      !selector('#image-display').classList.contains('false') &&
-      selector('#prompt').value !== ''
-    ) {
-      const prompt = new Prompts();
-
-      prompt.imagePrompt(selector('#prompt').value);
-
-      selector('#prompt').value = '';
-
-      //add spinner
-      selector('.spinner-container').classList.remove('d-none');
-    }
-  });
-
-  //text button
-  selector('#text-mode').addEventListener('click', () => {
-    const prompt = new Prompts();
-
-    prompt.textMode();
-
-    //active state
-    selector('#text-mode').classList.replace('btn-primary', 'btn-info');
-    selector('#image-mode').classList.replace('btn-info', 'btn-primary');
-  });
-
-  //image button
-  selector('#image-mode').addEventListener('click', () => {
-    const prompt = new Prompts();
-
-    prompt.imageMode();
-
-    //active state
-    selector('#image-mode').classList.replace('btn-primary', 'btn-info');
-    selector('#text-mode').classList.replace('btn-info', 'btn-primary');
-  });
-
-  //set default mode to text mode
-  document.addEventListener('DOMContentLoaded', () => {
-    const prompt = new Prompts();
-
-    prompt.textMode();
-  });
-}
-
-loadEventListeners();
+loadAllEventListeners();
