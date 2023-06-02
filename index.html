@@ -37,9 +37,9 @@
       }
     </style>
     <title>GenieAI</title>
-  </head>
-  <body>
+    <!--container-->
     <div class="container main-container">
+      <!--navbar-->
       <nav class="navbar row">
         <div class="col-md-6 col-lg-4 text-center">
           <a href="#" class="navbar-brand">
@@ -47,8 +47,10 @@
           </a>
         </div>
 
+        <!--button container-->
         <div class="col-lg-8 col-md-6">
           <ul class="navbar-nav flex-row justify-content-center">
+            <!--text button-->
             <li class="nav-item">
               <button
                 class="btn btn-primary px-lg-5 px-sm-3 mr-3"
@@ -57,8 +59,13 @@
                 Text
               </button>
             </li>
+
+            <!--image button-->
             <li class="nav-item">
-              <button class="btn btn-primary px-lg-5 px-sm-2" id="image-mode">
+              <button
+                class="btn btn-primary px-lg-5 px-sm-3 mr-3"
+                id="image-mode"
+              >
                 Image
               </button>
             </li>
@@ -66,20 +73,23 @@
         </div>
       </nav>
 
-      <!--text mode-->
+      <!--result container-->
       <div class="container d-flex flex-column" id="promptresult-container">
+        <!--text-display-->
         <div class="my-3 p-3 pb-5" id="chat-display"></div>
 
-        <!--image mode-->
+        <!--image display-->
         <div class="row my-3 p-3" id="image-display">
           <div class="col-lg-6 mx-auto" id="imgone-container">
             <img src="" alt="" id="imgone" class="rounded" />
           </div>
+
           <div class="col-lg-6 mx-auto" id="imgtwo-container">
             <img src="" alt="" id="imgtwo" class="rounded" />
           </div>
         </div>
 
+        <!--spinner and input container-->
         <div class="container d-flex flex-column fixed-bottom">
           <!--spinner-->
           <div
@@ -97,9 +107,12 @@
             </button>
           </div>
         </div>
+        <!--spinner and input container end-->
       </div>
+      <!--result display container end-->
     </div>
-
+  </head>
+  <body>
     <script
       src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
       integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
