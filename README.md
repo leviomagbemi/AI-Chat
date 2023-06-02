@@ -1,5 +1,5 @@
 # GenieAI
-genieAI is a chat assistant built with OpenAI's GPT-3 model. It uses the Fetch API to retrieve data from OpenAI and DOM manipulation to output it to the user.
+genieAI is a chat assistant and AI image generator built with OpenAI's GPT-3 model. It uses the Fetch API to retrieve data from OpenAI and DOM manipulation to output it to the user.
 
 Getting Started
 To use genieAI, simply open the index.html file in your web browser.
